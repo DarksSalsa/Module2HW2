@@ -1,0 +1,3 @@
+﻿using ShopStructure;
+
+RunShop.Shopping();
