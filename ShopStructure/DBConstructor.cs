@@ -23,20 +23,21 @@ namespace ShopStructure
             }
         }
 
-        public List<Good> GetDB
+        public Good[] GetDB
         {
             get
             {
                 return ConstructDB();
             }
         }
-        private List<Good> ConstructDB()
+        private Good[] ConstructDB()
         {
-            List<Good> db = new();
+            // For different catalogues change array size
+            Good[] db = new Good[50];
             var names = File.ReadAllLines("DB imitation.txt");
             for (var i = 0; i < names.Length; i++)
             {
-                db.Add(new Good(names[i], Random.Shared.Next(1, 1000)));
+                db[i] = new Good(names[i], Random.Shared.Next(1, 1000));
             }
             return db;
         }

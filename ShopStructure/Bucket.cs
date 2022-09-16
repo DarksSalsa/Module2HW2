@@ -1,13 +1,14 @@
-﻿using static System.Console;
+﻿using System.Xml.Linq;
+using static System.Console;
 
 namespace ShopStructure
 {
     public class Bucket
     {
-        private Dictionary<Good, (int,int)> bucket = new(); 
+        private (Good, int, int)[]  bucket = new (Good, int, int)[20]; 
         public void AddElement()
         {
-            if (bucket.Count == 10)
+            if (bucket.Length == 10)
             {
                 WriteLine("Your bucket is full.");
                 return;
@@ -15,6 +16,20 @@ namespace ShopStructure
             var placeholder = Warehouse.GetInstance.Catalogue;
             WriteLine("Type the name and then the desired quantity of goods you want to purchase.");
             Write("Name: ");
+            for (int i = 0; i < bucket.Length; i++)
+                if (bucket[i] != default)
+                {
+                    break;
+                }
+                else
+                {
+                    string? name = ReadLine();
+                    Write("Amount: ");
+                    int amount = System.Convert.ToInt32(ReadLine());
+                    WriteLine($"{amount} samples of {name} were succesfully added to the bucket.");
+                    bucket[0] = (placeholder.Single(o => o.Name == name), amount, amount * placeholder.Single(o => o.Name == name).Price);
+                    return;
+                }
             while (true)
             {
                 string? name = ReadLine();
@@ -25,70 +40,109 @@ namespace ShopStructure
                     continue;
                 }
                 // Checks if an item is already in the bucket
-                else if (bucket.Select(o => o.Key.Name).ToList().Contains(name))
+                for (int i = 0; i < bucket.Length; i++)
                 {
-                    WriteLine($"{name} have already been added to the bucket.");
-                    continue;
+                    if (bucket[i] != default && bucket[i].Item1.Name == name)
+                    {
+                        WriteLine($"{name} have already been added to the bucket.");
+                        continue;
+                    }
                 }
-                else
+                Write("Amount: ");
+                int amount = System.Convert.ToInt32(ReadLine());
+                WriteLine($"{amount} samples of {name} were succesfully added to the bucket.");
+                for (int i = 0; i < bucket.Length; i++)
                 {
-                    Write("Amount: ");
-                    int amount = System.Convert.ToInt32(ReadLine());
-                    WriteLine($"{amount} samples of {name} were succesfully added to the bucket.");
-                    bucket.Add(placeholder.Single(o => o.Name == name), (amount,amount*placeholder.Single(o => o.Name == name).Price));
-                    break;
+                    if (bucket[i] == default)
+                    {
+                        bucket[i] = (placeholder.Single(o => o.Name == name), amount, amount * placeholder.Single(o => o.Name == name).Price);
+                        break;
+                    }
                 }
+                break;
             }
         }
         public void RemoveElement()
         {
-            if (bucket.Count() == 0)
+            for (int i = 0; i < bucket.Length; i++)
             {
-                WriteLine("Your bucket is empty");
-                return;
+                if (bucket[i] != default)
+                {
+                    break;
+                }
+                else if (i == bucket.Length - 1)
+                {
+                    WriteLine("Your bucket is empty");
+                    return;
+                }
             }
             WriteLine("Type the name of the good you want to remove from the bucket:");
             while (true)
             {
                 string? name = ReadLine();
                 // Checks if an item is in the bucket
-                if (name == null || !bucket.Select(o => o.Key.Name).ToList().Contains(name))
+                for (int i = 0; i< bucket.Length; i++)
                 {
-                    WriteLine($"{name} is not in the bucket.");
-                    continue;
+                    if (bucket[i] != default && bucket[i].Item1.Name == name)
+                    {
+                        WriteLine($"{name} was succesfully removed from the bucket.");
+                        bucket[i] = default;
+                        break;
+                    }
+                    else if (i == bucket.Length -1)
+                    {
+                        WriteLine("There is no item with such name in the bucket");
+                        return;
+                    }
                 }
-                else
-                {
-                    WriteLine($"{name} was succesfully removed from the bucket.");
-                    //placeholder.Single(o => o.Name == name), amount
-                    bucket.Remove(bucket.First(o => o.Key.Name == name).Key);
-                    break;
-                }
+                break;
             }
         }
         public void ViewBucket()
         {
-            WriteLine("You have these goods in your bucket:");
-            foreach (Good i in bucket.Keys)
+            for (int i = 0; i < bucket.Length; i++)
             {
-                WriteLine($"{i.Name} x{bucket[i].Item1} -- {bucket[i].Item2:C} ");
+                if (bucket[i]!= default)
+                {
+                    break;
+                }
+                else if(i == bucket.Length -1)
+                {
+                    WriteLine("Your bucket is empty");
+                    return;
+                }
+            }
+            WriteLine("You have these goods in your bucket:");
+            foreach (var i in bucket)
+            {
+                if (i != default)
+                {
+                    WriteLine($"{i.Item1.Name} x{i.Item2} -- {i.Item3:C} ");
+                }
             }
         }
         private decimal CalculatePrice()
         {
             decimal accumulator = 0M;
-            foreach(var i in bucket.Values)
+            foreach(var i in bucket)
             {
-                accumulator += (i.Item2);
+                accumulator += (i.Item3);
             }
             return accumulator;
         }
         public bool Checkout()
         {
-            if (bucket.Count() == 0)
+            for (int i = 0; i < bucket.Length; i++)
             {
-                WriteLine("Your bucket is empty");
-                return false;
+                if (bucket[i] != default)
+                {
+                    break;
+                }
+                else if (i == bucket.Length - 1)
+                {
+                    WriteLine("Your bucket is empty");
+                    return false;
+                }
             }
             ViewBucket();
             WriteLine($"The purchase requires {CalculatePrice():c} in total.");

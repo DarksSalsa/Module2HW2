@@ -5,7 +5,7 @@ namespace ShopStructure
     public sealed class Warehouse
     {
         private static readonly Warehouse Instance = new();
-        public readonly List<Good> Catalogue = DBConstructor.GetInstance.GetDB;
+        public readonly Good[] Catalogue = DBConstructor.GetInstance.GetDB;
 
         static Warehouse()
         {
